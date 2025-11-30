@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MoMeNts</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--muted:#6b6f76;--accent:#ff2d55}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter, Arial, sans-serif;background:var(--bg);color:#111}
+.header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:#fff;box-shadow:0 2px 8px rgba(16,24,40,.04);position:sticky;top:0;z-index:50}
+.header .left{display:flex;align-items:center;gap:12px}
+.header .right{display:flex;align-items:center;gap:12px}
+.logo{font-weight:800;color:var(--accent)}
+.search input{padding:8px 10px;border-radius:8px;border:1px solid #e6e9ef;width:320px}
+.app{display:flex;gap:20px;padding:18px}
+.sidebar{width:260px;min-height:calc(100vh - 72px);background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 24px rgba(16,24,40,.04);position:sticky;top:84px}
+.main{flex:1}
+.rightPanel{width:320px;min-height:calc(100vh - 72px);background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 24px rgba(16,24,40,.04);position:sticky;top:84px}
+.userMini{display:flex;align-items:center;gap:12px;cursor:pointer}
+.userMini img{width:48px;height:48px;border-radius:8px;object-fit:cover}
+.card{background:var(--card);border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 6px 16px rgba(16,24,40,.03)}
+.videoItem{display:flex;gap:12px;align-items:flex-start}
+.videoItem img{width:220px;height:124px;border-radius:8px;object-fit:cover}
+.videoMeta{flex:1}
+.controls{display:flex;gap:8px;margin-top:8px}
+.btn{padding:8px 12px;border-radius:8px;border:1px solid #e6e9ef;background:transparent;cursor:pointer}
+.small{font-size:13px;padding:6px 8px}
+.bottomNav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--card);display:flex;gap:8px;padding:8px;border-radius:999px;box-shadow:0 10px 30px rgba(16,24,40,.08)}
+.bottomNav button{background:transparent;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+.count{background:#f1f3f5;padding:4px 8px;border-radius:999px;font-size:12px;color:var(--muted)}
+/* responsive */
+@media (max-width:1000px){.sidebar{display:none}.rightPanel{display:none}.search input{width:160px}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="left">
+    <div class="logo">MoMeNts</div>
+    <div class="search"><input id="searchInput" placeholder="Buscar videos, creadores, shorts..." /></div>
+  </div>
+  <div class="right">
+    <div id="greeting" style="font-size:14px;color:var(--muted)"></div>
+    <div id="navProfile" class="userMini" title="Mi perfil" onclick="openMyProfile()">
+      <img id="navProfileImg" src="https://via.placeholder.com/48" alt="perfil"/>
+      <div id="navProfileName">Invitado</div>
+    </div>
+    <button class="btn" id="createBtn">Crear video</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>Inicio</strong>
+        <span class="count" id="totalVideosCount">0</span>
+      </div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+        <button class="btn small" onclick="openCategory('Inicio')">Todas</button>
+        <button class="btn small" onclick="openCategory('Musica')">Música</button>
+        <button class="btn small" onclick="openCategory('Gaming')">Gaming</button>
+        <button class="btn small" onclick="openCategory('Shorts')">Shorts</button>
+        <button class="btn small" onclick="openCategory('Otros')">Otros</button>
+        <button class="btn small" onclick="openCategory('Amigos')">Amigos</button>
+      </div>
+    </div>
+    <div class="card">
+      <strong>Cuenta</strong>
+      <div style="margin-top:8px">Subscriptors: <span id="mySubCount">0</span></div>
+      <div style="margin-top:8px">Tus videos: <span id="myVideoCount">0</span></div>
+      <div style="margin-top:8px">Opciones:</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+        <button class="btn small" onclick="toggleDark()">Modo oscuro</button>
+        <button class="btn small" onclick="logout()">Cerrar sesión</button>
+        <button class="btn small" onclick="changeProfilePic()">Cambiar foto de perfil</button>
+        <button class="btn small" onclick="upgradePremium()">Mejorar a Premium</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" id="mainFeed">
+    <!-- feed cargado dinámicamente -->
+  </main>
+
+  <aside class="rightPanel">
+    <div class="card userMini" onclick="openMyProfile()" style="cursor:pointer">
+      <img id="panelImg" src="https://via.placeholder.com/64" />
+      <div>
+        <div id="panelName">Invitado</div>
+        <div id="panelDesc" style="font-size:13px;color:var(--muted)">Tu descripción aparecerá aquí</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong>Shorts rápidos</strong>
+      <div id="shortsPreview"></div>
+    </div>
+  </aside>
+</div>
+
+<div class="bottomNav">
+  <button onclick="showInicio()">Inicio</button>
+  <button onclick="showShorts()">Shorts</button>
+  <button onclick="openChat()">Chat</button>
+</div>
+
+<!-- Modales / containers -->
+<div id="modalContainer"></div>
+
+<script>
+// Datos persistentes
+let users = JSON.parse(localStorage.getItem('MoUsers')||'{}'); // keyed by name
+let videos = JSON.parse(localStorage.getItem('MoVideos')||'[]');
+let current = JSON.parse(localStorage.getItem('MoCurrent')||'null');
+
+// util
+function saveAll(){ localStorage.setItem('MoUsers', JSON.stringify(users)); localStorage.setItem('MoVideos', JSON.stringify(videos)); localStorage.setItem('MoCurrent', JSON.stringify(current)); updateUICounts(); }
+function notify(msg){ alert(msg); }
+
+// init seed
+if(!users['DyMax20153']){ users['DyMax20153']={name:'DyMax20153',pass:'',profile:'https://via.placeholder.com/64?text=DM',desc:'Administrador de MoMeNts',subs:[],videos:[],lastNameChange:0,premium:false,friends:[]}; saveAll(); }
+if(videos.length===0){ videos.push({id:1,title:'Bienvenida a MoMeNts',desc:'Explora y comparte',thumbnail:'https://via.placeholder.com/400x225?text=Bienvenido',url:'',creator:'DyMax20153',category:'Inicio',type:'normal',views:0,likes:[],comments:[],created:Date.now(),reports:[]}); saveAll(); }
+
+// greeting
+function showGreeting(){ const g = document.getElementById('greeting'); if(current) g.textContent = 'Bienvenido, '+current; else g.textContent = 'Bienvenido, invitado'; }
+showGreeting();
+
+// nav profile
+function updateNavProfile(){ const img = document.getElementById('navProfileImg'); const name = document.getElementById('navProfileName'); if(current && users[current]){ img.src = users[current].profile; name.textContent = users[current].name; document.getElementById('panelImg').src = users[current].profile; document.getElementById('panelName').textContent = users[current].name; document.getElementById('panelDesc').textContent = users[current].desc||'Agrega una descripción a tu perfil'; } else { img.src='https://via.placeholder.com/48'; name.textContent='Invitado'; document.getElementById('panelImg').src='https://via.placeholder.com/64'; document.getElementById('panelName').textContent='Invitado'; document.getElementById('panelDesc').textContent='Tu descripción aparecerá aquí'; } updateUICounts(); }
+updateNavProfile();
+
+// update counts
+function updateUICounts(){ document.getElementById('totalVideosCount').textContent = videos.length; if(current && users[current]){ document.getElementById('mySubCount').textContent = users[current].subs ? users[current].subs.length : 0; document.getElementById('myVideoCount').textContent = users[current].videos ? users[current].videos.length : 0; } else { document.getElementById('mySubCount').textContent = 0; document.getElementById('myVideoCount').textContent = 0; } }
+updateUICounts();
+
+// Auth modal (login/register)
+function openAuth(){ const html = `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:999">
+    <div style="background:#fff;padding:18px;border-radius:10px;width:360px">
+      <h3>Bienvenido a MoMeNts</h3>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn" onclick="showLogin()">Iniciar sesión</button>
+        <button class="btn" onclick="showRegister()">Registrarse</button>
+      </div>
+    </div>
+  </div>`; document.getElementById('modalContainer').innerHTML = html; }
+
+function closeModal(){ document.getElementById('modalContainer').innerHTML = ''; }
+
+function showLogin(){ document.getElementById('modalContainer').innerHTML = `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999">
+    <div style="background:#fff;padding:18px;border-radius:10px;width:360px">
+      <h3>Iniciar sesión</h3>
+      <input id="liName" placeholder="Nombre" class="input"><br><br>
+      <input id="liPass" placeholder="Contraseña" type="password"><br><br>
+      <button class="btn" onclick="doLogin()">Entrar</button>
+      <button class="btn" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+`; }
+
+function showRegister(){ document.getElementById('modalContainer').innerHTML = `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999">
+    <div style="background:#fff;padding:18px;border-radius:10px;width:360px">
+      <h3>Registrarse</h3>
+      <input id="rName" placeholder="Nombre"><br><br>
+      <input id="rBirth" type="date"><br><br>
+      <input id="rPic" type="file" accept="image/*"><br><br>
+      <input id="rPass" type="password" placeholder="Contraseña"><br><br>
+      <button class="btn" onclick="doRegister()">Crear cuenta</button>
+      <button class="btn" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+`; }
+
+function doRegister(){ const name = document.getElementById('rName').value.trim(); const birth = document.getElementById('rBirth').value; const pass = document.getElementById('rPass').value; const picFile = document.getElementById('rPic').files[0]; if(!name||!birth||!pass||!picFile) return alert('Completa todos los campos'); if(users[name]) return alert('Usuario ya existe'); const reader = new FileReader(); reader.onload = ()=>{ users[name]={name,pass,profile:reader.result,desc:'',subs:[],videos:[],lastNameChange:0,premium:false,friends:[]}; saveAll(); current=name; updateNavProfile(); closeModal(); notify('Cuenta creada. Bienvenido '+name); showGreeting(); renderFeed(true); }; reader.readAsDataURL(picFile); }
+
+function doLogin(){ const n = document.getElementById('liName').value.trim(); const p = document.getElementById('liPass').value; if(!users[n]||users[n].pass!==p) return alert('Credenciales inválidas'); current=n; updateNavProfile(); closeModal(); notify('Bienvenido '+n); showGreeting(); renderFeed(true); }
+
+// create video flow: select file -> name -> desc -> optional category -> save
+document.getElementById('createBtn').onclick = ()=>{ if(!current) return openAuth(); startCreateVideo(); };
+function startCreateVideo(){ document.getElementById('modalContainer').innerHTML = `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999">
+    <div style="background:#fff;padding:18px;border-radius:10px;width:420px">
+      <h3>Crear video</h3>
+      <input id="fileVideo" type="file" accept="video/*"><br><br>
+      <button class="btn" onclick="stepVideoName()">Siguiente</button>
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+`; }
+
+function stepVideoName(){ const f = document.getElementById('fileVideo').files[0]; if(!f) return alert('Selecciona un video'); const url = URL.createObjectURL(f); // check duration for shorts when later
+ window._newVideoFile = {file:f,url}; document.getElementById('modalContainer').innerHTML = `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999">
+    <div style="background:#fff;padding:18px;border-radius:10px;width:420px">
+      <h3>Nombre del video</h3>
+      <input id="vName"><br><br>
+      <h4>Tipo</h4>
+      <select id="vType"><option value="normal">Normal</option><option value="short">Short (menos de 60s)</option></select><br><br>
+      <button class="btn" onclick="stepVideoDesc()">Siguiente</button>
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+`; }
+
+function stepVideoDesc(){ const name = document.getElementById('vName').value.trim(); const type = document.getElementById('vType').value; if(!name) return alert('Pon un nombre'); window._newVideoFile.name = name; window._newVideoFile.type = type; document.getElementById('modalContainer').innerHTML = `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999">
+    <div style="background:#fff;padding:18px;border-radius:10px;width:420px">
+      <h3>Descripción</h3>
+      <textarea id="vDesc" style="width:100%;height:80px"></textarea><br><br>
+      <label>Categoria: <select id="vCat"><option>Inicio</option><option>Musica</option><option>Gaming</option><option>Shorts</option><option>Otros</option></select></label><br><br>
+      <button class="btn" onclick="finishCreateVideo()">Crear video</button>
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+`; }
+
+async function finishCreateVideo(){ const desc = document.getElementById('vDesc').value; const cat = document.getElementById('vCat').value; const nv = window._newVideoFile; if(!nv) return; // check if short type enforce duration <60
+ if(nv.type==='short'){ // measure duration
+   const dur = await getVideoDuration(nv.url); if(dur>60){ return alert('Los shorts deben ser menos de 60 segundos'); }
+ }
+ const id = Date.now(); // store video via URL.createObjectURL is temporary; to persist convert to dataURL
+ const dataUrl = await fileToDataURL(nv.file);
+ const videoObj = {id,title:nv.name,desc,thumbnail:'',url:dataUrl,creator:current,category:cat,type:nv.type,views:0,likes:[],comments:[],created:Date.now(),reports:[]}; videos.unshift(videoObj); // add to top
+ // add to user
+ users[current].videos = users[current].videos || []; users[current].videos.push(id);
+ saveAll(); closeModal(); renderFeed(true); }
+
+function getVideoDuration(url){ return new Promise(resolve=>{ const v = document.createElement('video'); v.preload='metadata'; v.src=url; v.onloadedmetadata = ()=>{ resolve(v.duration); }; }); }
+function fileToDataURL(file){ return new Promise(resolve=>{ const r=new FileReader(); r.onload=e=>resolve(e.target.result); r.readAsDataURL(file); }); }
+
+// render feed with infinite scroll
+let feedOffset = 0; const FEED_BATCH = 6; let currentFilter = '';
+function renderFeed(reset){ const container = document.getElementById('mainFeed'); if(reset){ feedOffset=0; container.innerHTML=''; }
+ const list = videos.filter(v=> currentFilter===''|| v.title.toLowerCase().includes(currentFilter.toLowerCase()) || v.category===currentFilter || (currentFilter==='Shorts' && v.type==='short') );
+ const slice = list.slice(feedOffset, feedOffset+FEED_BATCH);
+ slice.forEach(v=> container.appendChild(renderVideoCard(v)));
+ feedOffset += slice.length; updateUICounts(); }
+
+window.onscroll = ()=>{ if((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200){ // near bottom
+   renderFeed(false);
+ }};
+
+function renderVideoCard(v){ const div = document.createElement('div'); div.className='card videoItem'; const thumb = v.thumbnail || ('https://via.placeholder.com/400x225?text='+encodeURIComponent(v.title)); div.innerHTML = `
+  <img src='${thumb}' />
+  <div class='videoMeta'>
+    <div style='display:flex;justify-content:space-between;align-items:center'>
+      <div><strong>${v.title}</strong><div style='font-size:13px;color:var(--muted)'>${v.creator} • ${v.category} • ${new Date(v.created).toLocaleDateString()}</div></div>
+      <div style='text-align:right'>
+        <div class='count'>${v.likes.length} ❤</div>
+        <div style='font-size:12px;color:var(--muted)'>${v.comments.length} comentarios</div>
+      </div>
+    </div>
+    <div class='controls'>
+      <button class='btn small' onclick='openVideo(${v.id})'>Abrir</button>
+      <button class='btn small' onclick='toggleLikeVideo(${v.id})'>${v.likes.includes(current)?'Unlike':'Like'}</button>
+      <button class='btn small' onclick='openCreator("${v.creator}")'>Ver perfil</button>
+      <button class='btn small' onclick='reportVideo(${v.id})'>Denunciar</button>
+    </div>
+  </div>
+`;
+ return div; }
+
+function renderFeedInitial(){ renderFeed(true); }
+renderFeedInitial();
+
+// open video detailed view
+function openVideo(id){ const v = videos.find(x=>x.id===id); if(!v) return; // show modal with player
+ const html = `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:999">
+    <div style="background:#fff;padding:14px;border-radius:10px;width:80%;max-width:900px;max-height:90%;overflow:auto">
+      <h3>${v.title}</h3>
+      ${v.url?`<video src='${v.url}' controls style='width:100%;max-height:520px'></video>`:`<img src='${v.thumbnail||"https://via.placeholder.com/800x450"}' style='width:100%'/>`}
+      <p>${v.desc}</p>
+      <div style='display:flex;gap:8px;align-items:center'>
+        <button class='btn' onclick='toggleLikeVideo(${v.id})'>${v.likes.includes(current)?'Unlike':'Like'}</button>
+        <div class='count'>${v.likes.length} ❤</div>
+        <div style='font-size:13px;color:var(--muted)'>${v.views} vistas</div>
+        <div style='margin-left:auto'>Comentarios: ${v.comments.length}</div>
+      </div>
+      <div style='margin-top:12px'>
+        <h4>Comentarios</h4>
+        <div id='cmList'></div>
+        <div style='margin-top:8px'>
+          <textarea id='cmText' style='width:100%;height:80px'></textarea>
+          <div style='display:flex;gap:8px;margin-top:8px'>
+            <button class='btn' onclick='postComment(${v.id})'>Enviar</button>
+            <button class='btn' onclick='closeModal()'>Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ `; document.getElementById('modalContainer').innerHTML = html; renderCommentsList(v.id); }
+
+function closeModal(){ document.getElementById('modalContainer').innerHTML=''; }
+
+function toggleLikeVideo(id){ if(!current) return openAuth(); const v = videos.find(x=>x.id===id); const i = v.likes.indexOf(current); if(i===-1) v.likes.push(current); else v.likes.splice(i,1); saveAll(); // update UI
+ renderFeed(true); openVideo(id); }
+
+// comments
+function renderCommentsList(vid){ const v = videos.find(x=>x.id===vid); const el = document.getElementById('cmList'); if(!el) return; el.innerHTML=''; v.comments.forEach(c=>{ const div = document.createElement('div'); div.style.border='1px solid #eee'; div.style.padding='8px'; div.style.marginBottom='6px'; div.innerHTML = `<div style='display:flex;justify-content:space-between'><div><strong>${users[c.user].name}</strong> <span style='color:var(--muted);font-size:12px'>${new Date(c.at).toLocaleString()}</span></div><div><button class='btn small' onclick='startEditComment(${vid},${c.id})'>Editar</button> <button class='btn small' onclick='reportComment(${vid},${c.id})'>Denunciar</button></div></div><div style='margin-top:6px'>${c.text}</div>`; el.appendChild(div); }); }
+
+function postComment(vid){ if(!current) return openAuth(); const text = document.getElementById('cmText').value.trim(); if(!text) return; const v = videos.find(x=>x.id===vid); const c = {id:Date.now(),user:current,text,at:Date.now()}; v.comments.push(c); saveAll(); renderCommentsList(vid); document.getElementById('cmText').value=''; }
+
+function startEditComment(vid,cid){ const v = videos.find(x=>x.id===vid); const c = v.comments.find(x=>x.id===cid); if(!c) return; if(c.user!==current) return alert('Solo puedes editar tus comentarios'); const nue = prompt('Editar comentario', c.text); if(nue===null) return; c.text=nue; saveAll(); renderCommentsList(vid); }
+function reportComment(vid,cid){ const v=videos.find(x=>x.id===vid); const c=v.comments.find(x=>x.id===cid); c.reported=true; saveAll(); alert('Comentario reportado'); }
+
+// profiles
+function openCreator(name){ if(!users[name]) return alert('Usuario no encontrado'); openUserProfile(name); }
+function openUserProfile(name){ const u = users[name]; if(!u) return alert('Usuario no encontrado'); // render profile in main
+ const vids = videos.filter(x=>x.creator===name);
+ document.getElementById('mainFeed').innerHTML = `<div class='card'><div style='display:flex;gap:12px;align-items:center'><img src='${u.profile}' style='width:120px;height:120px;border-radius:12px;object-fit:cover'/><div><h2>${u.name}</h2><div style='color:var(--muted)'>${u.desc||''}</div><div style='margin-top:8px'>Subs: <span class='count'>${u.subs?u.subs.length:0}</span></div><div style='margin-top:8px'>${current && current!==u.name ? `<button class="btn" onclick="toggleSubscribe(\'${u.name}\')">${(users[current].subs||[]).includes(u.name)?'No suscribirse':'Suscribirse'}</button><button class="btn" onclick="reportUser(\'${u.name}\')">Denunciar</button>` : ''}</div></div></div></div>` + vids.map(v=>renderVideoCard(v)).join(''); }
+
+function toggleSubscribe(name){ if(!current) return openAuth(); users[current].subs = users[current].subs || []; users[name].subs = users[name].subs || []; const i = users[current].subs.indexOf(name); if(i===-1){ users[current].subs.push(name); users[name].subs.push(current); } else { users[current].subs.splice(i,1); const j = users[name].subs.indexOf(current); if(j!==-1) users[name].subs.splice(j,1); } saveAll(); openUserProfile(name); updateNavProfile(); }
+
+function reportUser(name){ alert('Usuario '+name+' reportado'); }
+
+function openMyProfile(){ if(!current) return openAuth(); openUserProfile(current); }
+
+// change name every 7 days
+function changeName(newName){ if(!current) return openAuth(); const u = users[current]; const now = Date.now(); if(now - (u.lastNameChange||0) < 7*24*3600*1000) return alert('Solo puedes cambiar tu nombre cada 7 días'); if(users[newName]) return alert('Nombre ya tomado'); // rename key in users
+ users[newName] = {...u, name:newName}; delete users[current]; // update videos and comments
+ videos.forEach(v=>{ if(v.creator===current) v.creator=newName; v.comments.forEach(c=>{ if(c.user===current) c.user=newName; }); }); // update subscribers lists
+ for(const k in users){ if(users[k].subs) users[k].subs = users[k].subs.map(s=> s===current? newName: s); if(users[k].friends) users[k].friends = users[k].friends.map(f=> f===current? newName: f); }
+ current = newName; users[current].lastNameChange = now; saveAll(); updateNavProfile(); renderFeed(true); }
+
+// infinite scroll handled earlier
+
+// search
+document.getElementById('searchInput').addEventListener('input', (e)=>{ currentFilter = e.target.value; renderFeed(true); });
+
+// Shorts view
+function showShorts(){ currentFilter = 'Shorts'; renderFeed(true); }
+
+// bottom nav actions
+function showInicio(){ currentFilter=''; renderFeed(true); }
+function openChat(){ document.getElementById('mainFeed').innerHTML = `<div class='card'><h3>Chat</h3><p>Aquí podrás hablar con tus amigos (simulado)</p></div>`; }
+
+// friends category
+function openCategory(cat){ if(cat==='Amigos'){ // show friends & search
+   if(!current) return openAuth(); const fr = users[current].friends || []; const list = Object.keys(users).filter(n=> fr.includes(n)); let html=`<div class='card'><h3>Tus amigos</h3>`; if(list.length===0) html += '<div>No tienes amigos aún</div>'; else html += list.map(n=>`<div>${n} <button class='btn' onclick='openUserProfile("${n}")'>Ver</button></div>`).join(''); html += `<hr><h4>Buscar amigos</h4><input id='friendSearch' placeholder='Busca por nombre'><button class='btn' onclick='doFriendSearch()'>Buscar</button></div>`; document.getElementById('mainFeed').innerHTML = html; } else { currentFilter = cat; renderFeed(true); } }
+
+function doFriendSearch(){ const q = document.getElementById('friendSearch').value.trim(); if(!q) return; if(users[q]){ document.getElementById('mainFeed').innerHTML = `<div class='card'><h3>Resultado</h3><div>${q} <button class='btn' onclick='openUserProfile("${q}")'>Ver perfil</button></div></div>`; } else { document.getElementById('mainFeed').innerHTML = `<div class='card'><h3>Resultado</h3><div>No se encontro nadie</div></div>`; } }
+
+// settings actions
+function toggleDark(){ document.body.style.background = document.body.style.background? '': '#0f1113'; document.body.classList.toggle('dark'); }
+function logout(){ current = null; saveAll(); updateNavProfile(); renderFeed(true); }
+function changeProfilePic(){ if(!current) return openAuth(); const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange = e=>{ const f = e.target.files[0]; const r = new FileReader(); r.onload = ()=>{ users[current].profile = r.result; saveAll(); updateNavProfile(); notify('Foto cambiada'); }; r.readAsDataURL(f); }; inp.click(); }
+function upgradePremium(){ if(!current) return openAuth(); const c = prompt('Captcha: escribe 1234'); if(c==='1234'){ users[current].premium = true; saveAll(); notify('Premium activado'); } }
+
+function reportVideo(id){ const v = videos.find(x=>x.id===id); v.reports.push({by: current||'Anon',at:Date.now()}); saveAll(); alert('Video reportado'); }
+
+// helper conversions: ensure users object keyed by name
+// If users stored as object keys already, leave; else migrate arrays
+if(Array.isArray(users)){
+  const obj = {};
+  users.forEach(u=> obj[u.name]=u);
+  users = obj; saveAll();
+}
+
+// initial UI
+updateNavProfile(); renderFeed(true);
+
+</script>
+
+</body>
+</html>
